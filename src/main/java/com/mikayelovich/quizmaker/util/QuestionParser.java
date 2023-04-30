@@ -1,7 +1,7 @@
 package com.mikayelovich.quizmaker.util;
 
 import com.mikayelovich.quizmaker.model.Answer;
-import com.mikayelovich.quizmaker.model.Question;
+import com.mikayelovich.quizmaker.model.QuestionModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,14 +9,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class QuestionParser {
-	private static final Pattern QUESTION_PATTERN =Pattern.compile("(\\d+)(?:\\.|\\))\\s*([^\\d]+?)(?=\\s*\\d+(?:\\.|\\))|$)", Pattern.DOTALL);
-						 Pattern questionPattern = Pattern.compile("(\\d+)\\.\\s*([^\\d]+?)(?=\\s*\\d+\\.|$)", Pattern.DOTALL);
+	private QuestionParser(){}
 
-	private static final Pattern ANSWER_PATTERN = Pattern.compile("([A-Z]+\\.\\s*[^\\n]+(?:\\n[^A-Z]+)*)", Pattern.DOTALL);
-
-
-	public static List<Question> parseQuestions(String input) {
-		List<Question> questions = new ArrayList<>();
+	public static List<QuestionModel> parseQuestions(String input) {
+		List<QuestionModel> questions = new ArrayList<>();
 		Pattern questionPattern = Pattern.compile("(\\d+)\\.\\s*((?:[^\\d]|\\d(?![.]))+?)(?=\\s*\\d+\\.|$)", Pattern.DOTALL);
 		Matcher questionMatcher = questionPattern.matcher(input);
 
@@ -26,7 +22,7 @@ public final class QuestionParser {
 			boolean isMultipleRightAnswers = hasMultipleRightAnswers(questionText);
 			List<Answer> answers = parseAnswers(questionText);
 			questionText = questionText.replaceAll("(\\s*[A-Z]+\\.\\s*[^\\n]+(?:\\n[^A-Z]+)*)", "").trim();
-			questions.add(new Question(questionId, questionText, answers,isMultipleRightAnswers));
+			questions.add(new QuestionModel(questionId, questionText, answers,isMultipleRightAnswers));
 		}
 
 		return questions;
@@ -45,7 +41,7 @@ public final class QuestionParser {
 	}
 
 	private static boolean hasMultipleRightAnswers(String questionText) {
-		Pattern multipleRightAnswersPattern = Pattern.compile("(choose\\s+(all\\s+that\\s+apply|\\d+))", Pattern.CASE_INSENSITIVE);
+		Pattern multipleRightAnswersPattern = Pattern.compile("(choose\\s+(all\\s+that\\s+apply|(?:two|three|four|five|six|seven|eight|nine)))", Pattern.CASE_INSENSITIVE);
 		Matcher multipleRightAnswersMatcher = multipleRightAnswersPattern.matcher(questionText);
 		return multipleRightAnswersMatcher.find();
 	}
