@@ -38,18 +38,25 @@ public class GoogleApiService {
 	@Value("${application.google-form-default-point-for-question}")
 	private int defaultPointsForQuestion;
 
+	@Value("${application.mail-to-share-write-rights-to-form}")
+	private String accessShareEmail;
+
 	@Autowired
 	private Forms googleFormsService;
 
 	@Autowired
 	private Drive googleDriveService;
 
+
+
 	public Optional<String> makeNewForm(String title, List<QuestionModel> questions) {
 		try {
 			String accessToken = getAccessToken();
-			Form form = createNewForm(accessToken, title, questions);
+			Form form = createNewForm(accessToken, title);
 			transformToQuiz(form.getFormId(), accessToken);
+			shareFormWithEditPrivileges(form.getFormId(), accessShareEmail,accessToken);
 			batchUpdateAddQuestions(questions, form.getFormId(), accessToken);
+
 			publishForm(form.getFormId(), accessToken);
 			return Optional.of(form.getResponderUri());
 		} catch (Exception e) {
@@ -58,23 +65,28 @@ public class GoogleApiService {
 		return Optional.empty();
 	}
 
-	private Form createNewForm(String token, String title, List<QuestionModel> questionModels) throws IOException {
+	public  void shareFormWithEditPrivileges(String formId, String emailAddress,String authToken) throws IOException {
+
+		Permission newPermission = new Permission()
+				.setType("user")
+				.setRole("writer")
+				.setEmailAddress(emailAddress);
+
+		googleDriveService.permissions().create(formId, newPermission).setOauthToken(authToken)
+				.setSendNotificationEmail(true)
+				.execute();
+	}
+
+
+	private Form createNewForm(String token, String title) throws IOException {
 		Form form = new Form();
 		form.setInfo(new Info());
 		form.getInfo().setTitle(title);
-//		FormSettings formSettings = new FormSettings();
-//		form.setSettings(formSettings);
-//		QuizSettings quizSettings = new QuizSettings();
-//		formSettings.setQuizSettings(quizSettings);
-//		form.setItems(new ArrayList<>());
-//		addQuestionsToItems(questionModels, form.getItems());
-//		quizSettings.setIsQuiz(true);
-
-		form = googleFormsService.forms().create(form)
+		return googleFormsService.forms().create(form)
 				.setAccessToken(token)
 				.execute();
-		return form;
 	}
+
 	private void transformToQuiz(String formId, String token) throws IOException {
 		BatchUpdateFormRequest batchRequest = new BatchUpdateFormRequest();
 		Request request = new Request();
@@ -108,7 +120,6 @@ public class GoogleApiService {
 		}
 
 
-
 		try {
 			googleFormsService.forms().batchUpdate(formId, batchRequest)
 					.setAccessToken(accessToken).execute();
@@ -123,6 +134,7 @@ public class GoogleApiService {
 			Item item = new Item();
 			items.add(item);
 
+			setItemTitle(questionModel, item);
 			QuestionItem questionItem = new QuestionItem();
 			item.setQuestionItem(questionItem);
 
@@ -133,7 +145,6 @@ public class GoogleApiService {
 
 			ChoiceQuestion choiceQuestion = new ChoiceQuestion();
 			question.setChoiceQuestion(choiceQuestion);
-
 			if (questionModel.isMultipleRightAnswers()) {
 				question.getChoiceQuestion().setType(GoogleChoiceQuestion.CHECKBOX.toString());
 			} else {
@@ -149,6 +160,14 @@ public class GoogleApiService {
 		return items;
 	}
 
+	private static void setItemTitle(QuestionModel questionModel, Item item) {
+
+		String questionText = questionModel.getQuestion();
+		questionText = questionText.replace("\n", "\r");
+
+		item.setTitle(questionText);
+	}
+
 	private void addGradingWithCorrectAnswersAndFeedback(QuestionModel questionModel, Question question) {
 		Grading grading = new Grading();
 		question.setGrading(grading);
@@ -159,13 +178,14 @@ public class GoogleApiService {
 
 		Feedback feedback = new Feedback();
 		feedback.setText(questionModel.getExplanation());
-		grading.setGeneralFeedback(feedback);
+		grading.setWhenWrong(feedback);
+		grading.setWhenRight(feedback);
 	}
 
 
-	private String getAccessToken() throws IOException {
+	public String getAccessToken() throws IOException {
 
-		try (FileInputStream fileInputStream = new FileInputStream(jsonKeyFullPath);) {
+		try (FileInputStream fileInputStream = new FileInputStream(jsonKeyFullPath)) {
 			GoogleCredentials credential = GoogleCredentials.fromStream(fileInputStream)
 					.createScoped(FormsScopes.all());
 

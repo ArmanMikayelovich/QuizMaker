@@ -59,6 +59,8 @@ public class QuizmakerApplication {
 
 				topicNameWithQuestions.put(topicName, questionModelModels);
 			}
+
+
 			System.out.println("printed, now publishing");
 			System.out.println("printed, now publishing");
 			System.out.println("printed, now publishing");

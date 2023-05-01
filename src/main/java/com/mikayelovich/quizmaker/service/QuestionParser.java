@@ -15,16 +15,33 @@ public  class QuestionParser {
 	public List<QuestionModel> parseQuestions(String input) {
 		List<QuestionModel> questionModels = new ArrayList<>();
 
-		Pattern questionPattern = Pattern.compile("(\\d+)\\.\\s+(.*?)(?=\\d+\\.|$)", Pattern.DOTALL);
-		Matcher questionMatcher = questionPattern.matcher(input);
+		String[] lines = input.split("\n");
+		StringBuilder currentQuestionText = new StringBuilder();
+		Integer currentQuestionId = null;
+		boolean isMultipleRightAnswers = false;
 
-		while (questionMatcher.find()) {
-			Integer questionId = Integer.parseInt(questionMatcher.group(1));
-			String questionText = questionMatcher.group(2).trim();
-			boolean isMultipleRightAnswers = hasMultipleRightAnswers(questionText);
-			List<Answer> answers = parseAnswers(questionText);
-			questionText = questionText.replaceAll("(\\s*[A-Z]+\\.\\s*[^\\n]+(?:\\n[^A-Z]+)*)", "").trim();
-			questionModels.add(new QuestionModel(questionId, questionText, answers, isMultipleRightAnswers));
+		for (String line : lines) {
+			Pattern questionPattern = Pattern.compile("^(\\d+)\\.");
+			Matcher questionMatcher = questionPattern.matcher(line);
+
+			if (questionMatcher.find()) {
+				if (currentQuestionId != null) {
+					List<Answer> answers = parseAnswers(currentQuestionText.toString());
+					String questionText = currentQuestionText.toString().replaceAll("(\\s*[A-Z]+\\.\\s*[^\\n]+(?:\\n[^A-Z]+)*)", "").trim();
+					questionModels.add(new QuestionModel(currentQuestionId, questionText, answers, isMultipleRightAnswers));
+				}
+				currentQuestionId = Integer.parseInt(questionMatcher.group(1));
+				currentQuestionText = new StringBuilder(line);
+				isMultipleRightAnswers = hasMultipleRightAnswers(line);
+			} else {
+				currentQuestionText.append("\n").append(line);
+			}
+		}
+
+		if (currentQuestionId != null) {
+			List<Answer> answers = parseAnswers(currentQuestionText.toString());
+			String questionText = currentQuestionText.toString().replaceAll("(\\s*[A-Z]+\\.\\s*[^\\n]+(?:\\n[^A-Z]+)*)", "").trim();
+			questionModels.add(new QuestionModel(currentQuestionId, questionText, answers, isMultipleRightAnswers));
 		}
 
 		return questionModels;
@@ -36,7 +53,8 @@ public  class QuestionParser {
 		Matcher answerMatcher = answerPattern.matcher(questionText);
 
 		while (answerMatcher.find()) {
-			answers.add(new Answer(answerMatcher.group(1).trim()));
+			String answerText = answerMatcher.group(1).trim().replaceAll("[\\t\\n\\r]+", " ");;
+			answers.add(new Answer(answerText));
 		}
 
 		return answers;
