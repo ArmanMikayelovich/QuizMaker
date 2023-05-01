@@ -50,7 +50,7 @@ public final class IOUtils {
 
 			String rawQuestions = readAllLinesAsString(questionsPath);
 			String rawAnswers = readAllLinesAsString(answersPath);
-			QuestionWithAnswersRaw questionWithAnswersRaw = new QuestionWithAnswersRaw(rawQuestions, rawAnswers);
+			QuestionWithAnswersRaw questionWithAnswersRaw = new QuestionWithAnswersRaw(questionResource.getFilename(),rawQuestions, rawAnswers);
 			questionWithAnswersRawList.add(questionWithAnswersRaw);
 		}
 		return questionWithAnswersRawList;

@@ -18,8 +18,8 @@ public class ReviewParser {
 		mergeReviewWithAnswers(reviewText, questionModels, keepRightAnswers);
 	}
 
-	private  void mergeReviewWithAnswers(String reviewText, List<QuestionModel> questionModels, Boolean keepRightAnswers) {
-		Pattern reviewPattern = Pattern.compile("(\\d+)\\.\\s*([A-Z,\\s]+)\\.\\s*([^\\d]+(?:\\n(?=\\s+)[^\\n]+)*)", Pattern.DOTALL);
+	private void mergeReviewWithAnswers(String reviewText, List<QuestionModel> questionModels, Boolean keepRightAnswers) {
+		Pattern reviewPattern = Pattern.compile("(\\d+)\\.\\s*([A-Z,\\s]+)\\.\\s*([^\\d]+(?:\\n[^\\d]+)*)", Pattern.DOTALL);
 		Matcher reviewMatcher = reviewPattern.matcher(reviewText);
 
 		while (reviewMatcher.find()) {

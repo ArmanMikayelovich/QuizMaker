@@ -15,8 +15,7 @@ public  class QuestionParser {
 	public List<QuestionModel> parseQuestions(String input) {
 		List<QuestionModel> questionModels = new ArrayList<>();
 
-		//TODO refactor, may lead to stack over flow in large inputs
-		Pattern questionPattern = Pattern.compile("(\\d+)\\.\\s*((?:[^\\d]|\\d(?![.]))+?)(?=\\s*\\d+\\.|$)", Pattern.DOTALL);
+		Pattern questionPattern = Pattern.compile("(\\d+)\\.\\s+(.*?)(?=\\d+\\.|$)", Pattern.DOTALL);
 		Matcher questionMatcher = questionPattern.matcher(input);
 
 		while (questionMatcher.find()) {
@@ -25,7 +24,7 @@ public  class QuestionParser {
 			boolean isMultipleRightAnswers = hasMultipleRightAnswers(questionText);
 			List<Answer> answers = parseAnswers(questionText);
 			questionText = questionText.replaceAll("(\\s*[A-Z]+\\.\\s*[^\\n]+(?:\\n[^A-Z]+)*)", "").trim();
-			questionModels.add(new QuestionModel(questionId, questionText, answers,isMultipleRightAnswers));
+			questionModels.add(new QuestionModel(questionId, questionText, answers, isMultipleRightAnswers));
 		}
 
 		return questionModels;

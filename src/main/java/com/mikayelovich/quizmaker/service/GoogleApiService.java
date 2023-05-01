@@ -13,10 +13,12 @@ import com.mikayelovich.quizmaker.util.GoogleChoiceQuestion;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,7 +30,7 @@ import static com.mikayelovich.quizmaker.util.FunctionalUtils.mapAnswerToOption;
 public class GoogleApiService {
 
 	@Value("${application.google-account-key-json-path}")
-	private Resource formCreateScriptId1;
+	private String jsonKeyFullPath;
 
 	@Value("${application.make-google-form}")
 	private Boolean isCreateGoogleForm;
@@ -42,33 +44,81 @@ public class GoogleApiService {
 	@Autowired
 	private Drive googleDriveService;
 
-public Optional<String> makeNewForm(String title, List<QuestionModel> questions){
-	try {
-		return Optional.of(createNewForm(getAccessToken(), title, questions));
-	} catch (Exception e) {
-		System.err.println(e);
+	public Optional<String> makeNewForm(String title, List<QuestionModel> questions) {
+		try {
+			String accessToken = getAccessToken();
+			Form form = createNewForm(accessToken, title, questions);
+			transformToQuiz(form.getFormId(), accessToken);
+			batchUpdateAddQuestions(questions, form.getFormId(), accessToken);
+			publishForm(form.getFormId(), accessToken);
+			return Optional.of(form.getResponderUri());
+		} catch (Exception e) {
+			System.err.println(e);
+		}
+		return Optional.empty();
 	}
-	return Optional.empty();
-}
 
-	private String createNewForm(String token, String title, List<QuestionModel> questionModels) throws IOException {
+	private Form createNewForm(String token, String title, List<QuestionModel> questionModels) throws IOException {
 		Form form = new Form();
 		form.setInfo(new Info());
 		form.getInfo().setTitle(title);
-		QuizSettings quizSettings = new QuizSettings();
-		form.getSettings().setQuizSettings(quizSettings);
-
-		List<Item> items = form.getItems();
-		addQuestionsToItems(questionModels, items);
-		quizSettings.setIsQuiz(true);
+//		FormSettings formSettings = new FormSettings();
+//		form.setSettings(formSettings);
+//		QuizSettings quizSettings = new QuizSettings();
+//		formSettings.setQuizSettings(quizSettings);
+//		form.setItems(new ArrayList<>());
+//		addQuestionsToItems(questionModels, form.getItems());
+//		quizSettings.setIsQuiz(true);
 
 		form = googleFormsService.forms().create(form)
 				.setAccessToken(token)
 				.execute();
-		return form.getResponderUri();
+		return form;
+	}
+	private void transformToQuiz(String formId, String token) throws IOException {
+		BatchUpdateFormRequest batchRequest = new BatchUpdateFormRequest();
+		Request request = new Request();
+		request.setUpdateSettings(new UpdateSettingsRequest());
+		request.getUpdateSettings().setSettings(new FormSettings());
+		request.getUpdateSettings().getSettings().setQuizSettings(new QuizSettings());
+		request.getUpdateSettings().getSettings().getQuizSettings().setIsQuiz(true);
+		request.getUpdateSettings().setUpdateMask("quizSettings.isQuiz");
+		batchRequest.setRequests(Collections.singletonList(request));
+		googleFormsService.forms().batchUpdate(formId, batchRequest)
+				.setAccessToken(token).execute();
 	}
 
-	private void addQuestionsToItems(List<QuestionModel> questionModels, List<Item> items) {
+	public void batchUpdateAddQuestions(List<QuestionModel> questionModels, String formId, String accessToken) {
+		BatchUpdateFormRequest batchRequest = new BatchUpdateFormRequest();
+		ArrayList<Request> requestList = new ArrayList<>();
+		batchRequest.setRequests(requestList);
+
+		List<Item> items = mapQuestionsToItemsForCreateRequest(questionModels);
+		for (int i = 0; i < items.size(); i++) {
+			Item item = items.get(i);
+			Request request = new Request();
+			requestList.add(request);
+			CreateItemRequest createItemRequest = new CreateItemRequest();
+			request.setCreateItem(createItemRequest);
+			Location location = new Location();
+			createItemRequest.setLocation(location);
+
+			location.setIndex(i);
+			createItemRequest.setItem(item);
+		}
+
+
+
+		try {
+			googleFormsService.forms().batchUpdate(formId, batchRequest)
+					.setAccessToken(accessToken).execute();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private List<Item> mapQuestionsToItemsForCreateRequest(List<QuestionModel> questionModels) {
+		List<Item> items = new ArrayList<>();
 		for (QuestionModel questionModel : questionModels) {
 			Item item = new Item();
 			items.add(item);
@@ -91,66 +141,40 @@ public Optional<String> makeNewForm(String title, List<QuestionModel> questions)
 			}
 
 			List<Option> options = questionModel.getAnswers().stream().map(mapAnswerToOption).toList();
-			choiceQuestion.setOptions(options);
-
+			question.getChoiceQuestion().setOptions(options);
 
 			//there is a way to set separate feedbacks depended on right/wrong answer
-			addGradingWithCorrectAnswers(questionModel, question);
+			addGradingWithCorrectAnswersAndFeedback(questionModel, question);
 		}
+		return items;
 	}
 
-	private void addGradingWithCorrectAnswers(QuestionModel questionModel, Question question) {
+	private void addGradingWithCorrectAnswersAndFeedback(QuestionModel questionModel, Question question) {
 		Grading grading = new Grading();
 		question.setGrading(grading);
 
 		grading.setPointValue(defaultPointsForQuestion);
-		generageCorrectAnswers(questionModel.getAnswers());
+		CorrectAnswers correctAnswers = generageCorrectAnswers(questionModel.getAnswers());
+		grading.setCorrectAnswers(correctAnswers);
 
 		Feedback feedback = new Feedback();
 		feedback.setText(questionModel.getExplanation());
 		grading.setGeneralFeedback(feedback);
 	}
 
-	private static CorrectAnswers generageCorrectAnswers(List<Answer> answerList) {
-		CorrectAnswers correctAnswers = new CorrectAnswers();
-
-		List<CorrectAnswer> correctAnswerList = answerList.stream().filter(Answer::isRight)
-				.map(mapAnswerToCorrectAnswer).toList();
-		correctAnswers.setAnswers(correctAnswerList);
-		return correctAnswers;
-	}
 
 	private String getAccessToken() throws IOException {
-		GoogleCredentials credential = GoogleCredentials.fromStream(formCreateScriptId1.getInputStream())
-				.createScoped(FormsScopes.all());
 
-		return credential.getAccessToken() != null ?
-				credential.getAccessToken().getTokenValue() :
-				credential.refreshAccessToken().getTokenValue();
+		try (FileInputStream fileInputStream = new FileInputStream(jsonKeyFullPath);) {
+			GoogleCredentials credential = GoogleCredentials.fromStream(fileInputStream)
+					.createScoped(FormsScopes.all());
+
+			return credential.getAccessToken() != null ?
+					credential.getAccessToken().getTokenValue() :
+					credential.refreshAccessToken().getTokenValue();
+		}
 	}
 
-//	public void createQuiz(List<QuestionModel> questionModels) throws GeneralSecurityException, IOException {
-//		// Set up the HttpRequestFactory
-//
-//				// Create the Google Form using the createGoogleForm method
-//		String formId = createGoogleForm("Your Quiz Title");
-//
-//		// Add questions to the form
-//		for (QuestionModel questionModel : questionModels) {
-//			String questionText = questionModel.getQuestion();
-//			List<Answer> answers = questionModel.getAnswers();
-//			boolean isMultipleRightAnswers = questionModel.isMultipleRightAnswers();
-//
-//			// Convert the answers to the format required by the Google Forms API
-//			List<String> answerTexts = answers.stream().map(Answer::getText).collect(Collectors.toList());
-//
-//			// Add the question to the form
-////			addQuestionToForm(requestFactory, formId, questionText, answerTexts, isMultipleRightAnswers);
-//		}
-//
-//		// Set the form to be a quiz, assign points, and make questions mandatory
-////		configureFormAsQuiz(requestFactory, formId, questions);
-//	}
 
 	private boolean publishForm(String formId, String token) throws IOException {
 
@@ -165,5 +189,14 @@ public Optional<String> makeNewForm(String title, List<QuestionModel> questions)
 		}
 
 		return false;
+	}
+
+	private static CorrectAnswers generageCorrectAnswers(List<Answer> answerList) {
+		CorrectAnswers correctAnswers = new CorrectAnswers();
+
+		List<CorrectAnswer> correctAnswerList = answerList.stream().filter(Answer::isRight)
+				.map(mapAnswerToCorrectAnswer).toList();
+		correctAnswers.setAnswers(correctAnswerList);
+		return correctAnswers;
 	}
 }
