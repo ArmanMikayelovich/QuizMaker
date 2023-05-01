@@ -1,18 +1,21 @@
-package com.mikayelovich.quizmaker.util;
+package com.mikayelovich.quizmaker.service;
 
 import com.mikayelovich.quizmaker.model.Answer;
 import com.mikayelovich.quizmaker.model.QuestionModel;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public final class QuestionParser {
-	private QuestionParser(){}
+@Service
+public  class QuestionParser {
 
-	public static List<QuestionModel> parseQuestions(String input) {
-		List<QuestionModel> questions = new ArrayList<>();
+	public List<QuestionModel> parseQuestions(String input) {
+		List<QuestionModel> questionModels = new ArrayList<>();
+
+		//TODO refactor, may lead to stack over flow in large inputs
 		Pattern questionPattern = Pattern.compile("(\\d+)\\.\\s*((?:[^\\d]|\\d(?![.]))+?)(?=\\s*\\d+\\.|$)", Pattern.DOTALL);
 		Matcher questionMatcher = questionPattern.matcher(input);
 
@@ -22,10 +25,10 @@ public final class QuestionParser {
 			boolean isMultipleRightAnswers = hasMultipleRightAnswers(questionText);
 			List<Answer> answers = parseAnswers(questionText);
 			questionText = questionText.replaceAll("(\\s*[A-Z]+\\.\\s*[^\\n]+(?:\\n[^A-Z]+)*)", "").trim();
-			questions.add(new QuestionModel(questionId, questionText, answers,isMultipleRightAnswers));
+			questionModels.add(new QuestionModel(questionId, questionText, answers,isMultipleRightAnswers));
 		}
 
-		return questions;
+		return questionModels;
 	}
 
 	private static List<Answer> parseAnswers(String questionText) {

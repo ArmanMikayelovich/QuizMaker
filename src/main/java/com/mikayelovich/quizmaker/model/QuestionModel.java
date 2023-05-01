@@ -24,8 +24,9 @@ public class QuestionModel {
 		return "Question {" +
 				"id=" + id +
 				", question='" + question + '\'' +
-				", answers=\n" + answers.stream().map(Answer::toString).collect(Collectors.joining("\n")) +
-				'}';
+				", \nanswers=\n" + answers.stream().map(Answer::toString).collect(Collectors.joining("\n")) +
+				"\n explanation=" + explanation +
+				"\n}";
 	}
 
 }

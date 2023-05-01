@@ -1,0 +1,231 @@
+1. B, E, G. Option A is invalid because a single underscore is no
+longer allowed as an identifier as of Java 9. Option B is valid
+because you can use an underscore within identifiers, and a dollar
+sign ($) is also a valid character. Option C is not a valid identifier
+because true is a Java reserved word. Option D is not valid
+because a period (.) is not allowed in identifiers. Option E is valid
+because Java is case sensitive. Since Public is not a reserved word,
+it is allowed as an identifier, whereas public would not be
+allowed. Option F is not valid because the first character is not a
+letter, dollar sign ($), or underscore (_). Finally, option G is valid
+as identifiers can contain underscores (_) and numbers, provided
+the number does not start the identifier.
+2. D, F, G. The code compiles and runs without issue, so options A
+and B are incorrect. A boolean field initializes to false, making
+option D correct with Empty = false being printed. Object
+references initialize to null, not the empty String, so option F is
+correct with Brand = null being printed. Finally, the default value
+of floating-point numbers is 0.0. Although float values can be
+declared with an f suffix, they are not printed with an f suffix. For
+these reasons, option G is correct and Code = 0.0 is printed.
+3. B, D, E, H. A var cannot be initialized with a null value without a
+type, but it can be assigned a null value if the underlying type is
+not a primitive. For these reasons, option H is correct, but options
+A and C are incorrect. Options B and D are correct as the
+underlying types are String and Object, respectively. Option E is
+correct, as this is a valid numeric expression. You might know that
+dividing by zero produces a runtime exception, but the question
+was only about whether the code compiled. Finally, options F and
+G are incorrect as var cannot be used in a multiple-variable
+assignment.
+4. A, B, D, E. Line 4 does not compile because the L suffix makes the
+literal value a long, which cannot be stored inside a short directly,
+making option A correct. Line 5 does not compile because int is
+an integral type, but 2.0 is a double literal value, making option B
+correct. Line 6 compiles without issue. Lines 7 and 8 do not
+compile because numPets and numGrains are both primitives, and
+you can call methods only on reference types, not primitive
+values, making options D and E correct, respectively. Finally, line
+9 compiles because there is a length() method defined on String.
+5. A, D. The class does not compile, so options E, F, G, and H are
+incorrect. You might notice things like loops and
+increment/decrement operators in this problem, which we will
+cover in the next two chapters, but understanding them is not
+required to answer this question. The first compiler error is on
+line 3. The variable temp is declared as a float, but the assigned
+value is 50.0, which is a double without the F/f postfix. Since a
+double doesn’t fit inside a float, line 3 does not compile. Next,
+depth is declared inside the for loop and only has scope inside this
+loop. Therefore, reading the value on line 10 triggers a compiler
+error. Note that the variable Depth on line 2 is never used. Java is
+case sensitive, so Depth and depth are distinct variables. For these
+reasons, options A and D are the correct answers.
+6. C, E. Option C is correct because float and double primitives
+default to 0.0, which also makes option A incorrect. Option E is
+correct because all nonprimitive values default to null, which
+makes option F incorrect. Option D is incorrect because int
+primitives default to 0. Option B is incorrect because char defaults
+to the NUL character, '\u0000'. You don’t need to know this value
+for the exam, but you should know the default value is not null
+since it is a primitive.
+7. G. Option G is correct because local variables do not get assigned
+default values. The code fails to compile if a local variable is used
+when not being explicitly initialized. If this question were about
+instance variables, options B, D, and E would be correct. A
+boolean primitive defaults to false, and a float primitive defaults
+to 0.0f.
+8. B, E. Option B is correct because boolean primitives default to
+false. Option E is correct because long values default to 0L.
+9. C, E, F. In Java, there are no guarantees when garbage collection
+will run. The JVM is free to ignore calls to System.gc(). For this
+reason, options A, B, and D are incorrect. Option C is correct, as
+the purpose of garbage collection is to reclaim used memory.
+Option E is also correct that an object may never be garbage
+collected, such as if the program ends before garbage collection
+runs. Option F is correct and is the primary means by which
+garbage collection algorithms determine whether an object is
+eligible for garbage collection. Finally, option G is incorrect as
+marking a variable final means it is constant within its own
+scope. For example, a local variable marked final will be eligible
+for garbage collection after the method ends, assuming there are
+no other references to the object that exist outside the method.
+10. C. The class does compiles without issue, so options E, F, and G
+are incorrect. The key thing to notice is line 4 does not define a
+constructor, but instead a method named PoliceBox(), since it has
+a return type of void. This method is never executed during the
+program run, and color and age get assigned the default values
+null and 0L, respectively. Lines 11 and 12 change the values for an
+object associated with p, but then on line 13 the p variable is
+changed to point to the object associated with q, which still has
+the default values. For this reason, the program prints Q1=null,
+Q2=0, P1=null, and P2=0, making option C the only correct answer.
+11. A, D, E. From Chapter 1, a main() method must have a valid
+identifier of type String... or String[]. For this reason, option G
+can be eliminated immediately. Option A is correct because var is
+not a reserved word in Java and may be used as an identifier.
+Option B is incorrect as a period (.) may not be used in an
+identifier. Option C is also incorrect as an identifier may include
+digits but not start with one. Options D and E are correct as an
+underscore (_) and dollar sign ($) may appear anywhere in an
+identifier. Finally, option F is incorrect, as a var may not be used
+as a method argument.
+12. A, E, F. An underscore (_) can be placed in any numeric literal, so
+long as it is not at the beginning, the end, or next to a decimal
+point (.). Underscores can even be placed next to each other. For
+these reasons, options A, E, and F are correct. Options B and D
+are incorrect, as the underscore (_) is next to a decimal point (.).
+Options C and G are incorrect, because an underscore (_) cannot
+be placed at the beginning or end of the literal.
+13. B, D, H. The Rabbit object from line 3 has two references to it: one
+and three. The references are set to null on lines 6 and 8,
+respectively. Option B is correct because this makes the object
+eligible for garbage collection after line 8. Line 7 sets the reference
+four to null, since that is the value of one, which means it has no
+effect on garbage collection. The Rabbit object from line 4 has
+only a single reference to it: two. Option D is correct because this
+single reference becomes null on line 9. The Rabbit object
+declared on line 10 becomes eligible for garbage collection at the
+end of the method on line 12, making option H correct. Calling
+System.gc() has no effect on eligibility for garbage collection.
+14. B, C, F. A var cannot be used for a constructor or method
+parameter or for an instance or class variable, making option A
+incorrect and option C correct. The type of var is known at
+compile-time and the type cannot be changed at runtime,
+although its value can change at runtime. For these reasons,
+options B and F are correct, and option E is incorrect. Option D is
+incorrect, as var is not permitted in multiple-variable
+declarations. Finally, option G is incorrect, as var is not a reserved
+word in Java.
+15. C, F, G. First off, 0b is the prefix for a binary value, and 0x is the
+prefix for a hexadecimal value. These values can be assigned to
+many primitive types, including int and double, making options C
+and F correct. Option A is incorrect because naming the variable
+Amount will cause the System.out.print(amount) call on the next
+line to not compile. Option B is incorrect because 9L is a long
+value. If the type was changed to long amount = 9L, then it would
+compile. Option D is incorrect because 1_2.0 is a double value. If
+the type was changed to double amount = 1_2.0, then it would
+compile. Options E and H are incorrect because the underscore
+(_) appears next to the decimal point (.), which is not allowed.
+Finally, option G is correct and the underscore and assignment
+usage is valid.
+16. A, C, D. The code contains three compilation errors, so options E,
+F, G, and H are incorrect. Line 2 does not compile, as this is
+incorrect syntax for declaring multiple variables, making option A
+correct. The data type is declared only once and shared among all
+variables in a multiple variable declaration. Line 3 compiles
+without issue, as it declares a local variable inside an instance
+initializer that is never used. Line 4 does not compile because
+Java, unlike some other programming languages, does not
+support setting default method parameter values, making option
+C correct. Finally, line 7 does not compile because fins is in scope
+and accessible only inside the instance initializer on line 3,
+making option D correct.
+17. A, E, F, G. The question is primarily about variable scope. A
+variable defined in a statement such as a loop or initializer block
+is accessible only inside that statement. For this reason, options A
+and E are correct. Option B is incorrect because variables can be
+defined inside initializer blocks. Option C is incorrect, as a
+constructor argument is accessible only in the constructor itself,
+not for the life of the instance of the class. Constructors and
+instance methods can access any instance variable, even ones
+defined after their declaration, making option D incorrect and
+options F and G correct.
+18. F, G. The code does not compile, so options A, B, C, and D are all
+incorrect. The first compilation error occurs on line 5. Since char
+is an unsigned data type, it cannot be assigned a negative value,
+making option F correct. The second compilation error is on line
+9, since mouse is used without being initialized, making option G
+correct. You could fix this by initializing a value on line 4, but the
+compiler reports the error where the variable is used, not where it
+is declared.
+19. F. To solve this problem, you need to trace the braces {} and see
+when variables go in and out of scope. You are not required to
+understand the various data structures in the question, as this will
+be covered in the next few chapters. We start with hairs, which
+goes in and out of scope on line 2, as it is declared in an instance
+initializer, so it is not in scope on line 14. The three variables
+—water, air, twoHumps, declared on lines 3 and 4—are instance
+variables, so all three are in scope in all instance methods of the
+class, including spit() and on line 14. The distance method
+parameter is in scope for the life of the spit() method, making it
+the fourth value in scope on line 14. The path variable is in scope
+on line 6 and stays in scope until the end of the method on line 16,
+making it the fifth variable in scope on line 14. The teeth variable
+is in scope on line 7 and immediately goes out of scope on line 7
+since the statement ends. The two variables age and i defined on
+lines 9 and 10, respectively, both stay in scope until the end of the
+while loop on line 15, bringing the total variables in scope to seven
+on line 14. Finally, Private is in scope on 12 but out of scope after
+the for loop ends on line 13. Since the total in-scope variables is
+seven, option F is the correct answer.
+20. D. The class compiles and runs without issue, so options F and G
+are incorrect. We start with the main() method, which prints 7- on
+line 11. Next, a new Salmon instance is created on line 11. This calls
+the two instance initializers on lines 3 and 4 to be executed in
+order. The default value of an instance variable of type int is 0, so
+0- is printed next and count is assigned a value of 1. Next, the
+constructor is called. This assigns a value of 4 to count and prints
+2-. Finally, line 12 prints 4-, since that is the value of count.
+Putting it altogether, we have 7-0-2-4-, making option D the
+correct answer.
+21. A, D, F. The class compiles and runs without issue, so option H is
+incorrect. The program creates two Bear objects, one on line 9 and
+one on line 10. The first Bear object is accessible until line 13 via
+the brownBear reference variable. The second Bear object is passed
+to the first object’s roar() method on line 11, meaning it is
+accessible via both the polarBear reference and the
+brownBear.pandaBear reference. After line 12, the object is still
+accessible via brownBear.pandaBear. After line 13, though, it is no
+longer accessible since brownBear is no longer accessible. In other
+words, both objects become eligible for garbage collection after
+line 13, making options A and D correct. Finally, garbage
+collection is never guaranteed to run or not run, since the JVM
+decides this for you. For this reason, option F is correct, and
+options E and G are incorrect. The class contains a finalize()
+method, although this does not contribute to the answer. For the
+exam, you may see finalize() in a question, but since it’s
+deprecated as of Java 9, you will not be tested on it.
+22. H. None of these declarations is a valid instance variable
+declaration, as var cannot be used with instance variables, only
+local variables. For this reason, option H is the only correct
+answer. If the question were changed to be about local variable
+declarations, though, then the correct answers would be options
+C, D, and E. An identifier must start with a letter, $, or _, so
+options F and G would be incorrect. As of Java 9, a single
+underscore is not allowed as an identifier, so option A would be
+incorrect. Options A and G would also be incorrect because their
+numeric expressions use underscores incorrectly. An underscore
+cannot appear at the end of literal value, nor next to a decimal
+point (.). Finally, null is a reserved word, but var is not, so option
+B would be incorrect, and option E would be correct.

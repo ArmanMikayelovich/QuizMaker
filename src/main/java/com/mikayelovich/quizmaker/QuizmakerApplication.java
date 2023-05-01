@@ -1,13 +1,16 @@
 package com.mikayelovich.quizmaker;
 
 import com.mikayelovich.quizmaker.model.QuestionModel;
-import com.mikayelovich.quizmaker.model.QuestionWithAnswersTuple;
-import com.mikayelovich.quizmaker.util.QuestionParser;
-import com.mikayelovich.quizmaker.util.ReviewParser;
+import com.mikayelovich.quizmaker.model.QuestionWithAnswersRaw;
+import com.mikayelovich.quizmaker.service.QuestionParser;
+import com.mikayelovich.quizmaker.service.ReviewParser;
+import com.mikayelovich.quizmaker.util.IOUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.io.Resource;
 import org.springframework.util.ResourceUtils;
 
 import java.io.File;
@@ -17,8 +20,11 @@ import java.nio.file.Files;
 import java.util.List;
 
 @SpringBootApplication
+@RequiredArgsConstructor
 public class QuizmakerApplication {
 
+	private final QuestionParser questionParser;
+	private final ReviewParser reviewParser;
 
 	public static void main(String[] args) {
 		SpringApplication.run(QuizmakerApplication.class, args);
@@ -28,19 +34,25 @@ public class QuizmakerApplication {
 	@Bean
 	public CommandLineRunner run() {
 		return (String... args) -> {
-			QuestionWithAnswersTuple questionWithAnswersTuple = readQuestionsWithAnswers();
+			Resource[] resources = IOUtils.collectQuestionResources();
+			IOUtils.verifyIsAnswersExists(resources);
 
-			List<QuestionModel> questionModels = QuestionParser.parseQuestions(questionWithAnswersTuple.getQuestions());
-			ReviewParser.mergeReview(questionWithAnswersTuple.getAnswers(),questionModels);
-			questionModels.forEach(q -> System.out.println("\n" + q));
+			List<QuestionWithAnswersRaw> questionWithAnswersRawList = IOUtils.generateQuestionsWithAnswersRaw(resources);
+			for (QuestionWithAnswersRaw questionWithAnswersRaw : questionWithAnswersRawList) {
+
+				List<QuestionModel> questionModelModels = questionParser.parseQuestions(questionWithAnswersRaw.getQuestions());
+				reviewParser.mergeReview(questionWithAnswersRaw.getAnswers(), questionModelModels);
+				questionModelModels.forEach(q -> System.out.println("\n" + q));
+				System.out.println("\n\n\n");
+			}
 			System.exit(0);
 		};
 	}
 
-	private QuestionWithAnswersTuple readQuestionsWithAnswers() throws IOException {
-		String questions= loadFromFile("WelcomeToJava");
-		String answers= loadFromFile("WelcomeToJavaAnswers");
-		return new QuestionWithAnswersTuple(questions, answers);
+	private QuestionWithAnswersRaw readQuestionsWithAnswers() throws IOException {
+		String questions = loadFromFile("WelcomeToJava");
+		String answers = loadFromFile("WelcomeToJavaAnswers");
+		return new QuestionWithAnswersRaw(questions, answers);
 	}
 
 

@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class QuestionWithAnswersTuple {
+public class QuestionWithAnswersRaw {
 	private String questions;
 	private String answers;
 
