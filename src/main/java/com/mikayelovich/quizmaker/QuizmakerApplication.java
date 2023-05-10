@@ -8,6 +8,7 @@ import com.mikayelovich.quizmaker.service.ReviewParser;
 import com.mikayelovich.quizmaker.util.ConsoleUtils;
 import com.mikayelovich.quizmaker.util.IOUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -23,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @SpringBootApplication
 @RequiredArgsConstructor
@@ -32,6 +34,9 @@ public class QuizmakerApplication {
 	private final ReviewParser reviewParser;
 
 	private final GoogleApiService googleApiService;
+
+	@Value("${application.make-google-form}")
+	private Boolean isCreateGoogleForm;
 
 	public static void main(String[] args) {
 		SpringApplication.run(QuizmakerApplication.class, args);
@@ -59,18 +64,15 @@ public class QuizmakerApplication {
 
 				topicNameWithQuestions.put(topicName, questionModelModels);
 			}
-
-
-			System.out.println("printed, now publishing");
-			System.out.println("printed, now publishing");
-			System.out.println("printed, now publishing");
-			System.out.println("printed, now publishing");
-			System.out.println("printed, now publishing");
-
-			for (Map.Entry<String, List<QuestionModel>> topicWithQuestions : topicNameWithQuestions.entrySet()) {
-				Optional<String> responderUrlOptional = googleApiService.makeNewForm(topicWithQuestions.getKey(), topicWithQuestions.getValue());
-				responderUrlOptional.ifPresent(url -> System.out.println(ConsoleUtils.makeLineColorful(ConsoleUtils.Color.GREEN, url)));
+			if (Boolean.TRUE.equals(isCreateGoogleForm)) {
+				Stream.of(1, 2, 3, 4, 5).forEach(x -> System.out.println("printed, now publishing"));
+				for (Map.Entry<String, List<QuestionModel>> topicWithQuestions : topicNameWithQuestions.entrySet()) {
+					Optional<String> responderUrlOptional = googleApiService.makeNewForm(topicWithQuestions.getKey(), topicWithQuestions.getValue());
+					responderUrlOptional.ifPresent(url -> System.out.println(ConsoleUtils.makeLineColorful(ConsoleUtils.Color.GREEN, url)));
+				}
 			}
+
+
 
 			System.exit(0);
 		};

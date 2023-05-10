@@ -15,7 +15,7 @@ public class Answer {
 
 	@Override
 	public String toString() {
-		String answerText = "Answer {" +  "text='" + text + '\'' + ", isRight=" + isRight +'}';
+		String answerText = "Answer " +  "\"" + text + '\"' + ", isRight=" + isRight;
 		if (isRight) {
 			return ConsoleUtils.makeLineColorful(ConsoleUtils.Color.GREEN, answerText);
 		}

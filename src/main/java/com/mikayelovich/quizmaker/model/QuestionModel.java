@@ -21,12 +21,12 @@ public class QuestionModel {
 
 	@Override
 	public String toString() {
-		return "Question {" +
-				"id=" + id +
-				", question='" + question + '\'' +
-				", \nanswers=\n" + answers.stream().map(Answer::toString).collect(Collectors.joining("\n")) +
+		return "Question " +
+				"id=" + id + " | "+(isMultipleRightAnswers ? "Multi Answer" : "Single Answer" )+
+				", \"" + question + '\"' +
+				", \nanswers:\n" + answers.stream().map(Answer::toString).collect(Collectors.joining("\n")) +
 				"\n explanation=" + explanation +
-				"\n}";
+				"\n";
 	}
 
 }

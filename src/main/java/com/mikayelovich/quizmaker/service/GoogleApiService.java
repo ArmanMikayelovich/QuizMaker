@@ -72,8 +72,8 @@ public class GoogleApiService {
 				.setRole("writer")
 				.setEmailAddress(emailAddress);
 
-		googleDriveService.permissions().create(formId, newPermission).setOauthToken(authToken)
-				.setSendNotificationEmail(true)
+		googleDriveService.permissions().create(formId, newPermission)
+				.setOauthToken(authToken)
 				.execute();
 	}
 

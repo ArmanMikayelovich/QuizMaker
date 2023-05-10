@@ -28,11 +28,12 @@ public  class QuestionParser {
 				if (currentQuestionId != null) {
 					List<Answer> answers = parseAnswers(currentQuestionText.toString());
 					String questionText = currentQuestionText.toString().replaceAll("(\\s*[A-Z]+\\.\\s*[^\\n]+(?:\\n[^A-Z]+)*)", "").trim();
+					isMultipleRightAnswers = hasMultipleRightAnswers(questionText);
+
 					questionModels.add(new QuestionModel(currentQuestionId, questionText, answers, isMultipleRightAnswers));
 				}
 				currentQuestionId = Integer.parseInt(questionMatcher.group(1));
 				currentQuestionText = new StringBuilder(line);
-				isMultipleRightAnswers = hasMultipleRightAnswers(line);
 			} else {
 				currentQuestionText.append("\n").append(line);
 			}
@@ -41,6 +42,7 @@ public  class QuestionParser {
 		if (currentQuestionId != null) {
 			List<Answer> answers = parseAnswers(currentQuestionText.toString());
 			String questionText = currentQuestionText.toString().replaceAll("(\\s*[A-Z]+\\.\\s*[^\\n]+(?:\\n[^A-Z]+)*)", "").trim();
+			isMultipleRightAnswers = hasMultipleRightAnswers(questionText);
 			questionModels.add(new QuestionModel(currentQuestionId, questionText, answers, isMultipleRightAnswers));
 		}
 
@@ -61,9 +63,11 @@ public  class QuestionParser {
 	}
 
 	private static boolean hasMultipleRightAnswers(String questionText) {
-		Pattern multipleRightAnswersPattern = Pattern.compile("(choose\\s+(all\\s+that\\s+apply|(?:two|three|four|five|six|seven|eight|nine)))", Pattern.CASE_INSENSITIVE);
+		Pattern multipleRightAnswersPattern = Pattern.compile("(?i)Choose(\\s+(all\\s+that\\s+apply|(?:two|three|four|five|six|seven|eight|nine)))?");
 		Matcher multipleRightAnswersMatcher = multipleRightAnswersPattern.matcher(questionText);
 		return multipleRightAnswersMatcher.find();
 	}
+
+
 }
 
